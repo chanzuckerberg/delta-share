@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chanzuckerberg/go-misc/oidc_cli/oidc_impl"
+	"github.com/chanzuckerberg/go-misc/oidc_cli/v2/oidc_impl"
 
-	"github.com/chanzuckerberg/go-misc/oidc_cli/oidc_impl/client"
+	"github.com/chanzuckerberg/go-misc/oidc_cli/v2/oidc_impl/client"
 
 	"encoding/base64"
 	"encoding/json"
