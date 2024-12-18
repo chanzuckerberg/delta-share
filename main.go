@@ -27,15 +27,11 @@ func main() {
 	clientID := "b8g7vhl1b312isgh5ik3gn6c"
 	issuer := "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_JLABROYbl"
 	scopes := []string{"openid", "profile", "email"}
-	clientInstance := &client.Client{
-		OauthConfig: client.OauthConfig{},
-	}
 
 	// Apply scopes using SetScopeOptions
 	setScopesOption := client.SetScopeOptions(scopes)
-	setScopesOption(clientInstance)
 
-	token, err := oidc_impl.GetToken(context.Background(), clientID, issuer)
+	token, err := oidc_impl.GetToken(context.Background(), clientID, issuer, setScopesOption)
 	if err != nil {
 		panic(err)
 	}
