@@ -1,0 +1,30 @@
+project_name: delta-share
+
+builds:
+  - binary: delta-share
+    dir: delta-share/core/cli
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - "-w -s -X github.com/chanzuckerberg/delta-share/core/shared/go/version.ReleaseGitSha={{.Commit}} -X github.com/chanzuckerberg/delta-share/core/shared/go/version.ReleaseVersion={{.Version}}"
+    flags:
+      - -trimpath
+
+release:
+  github:
+    owner: chanzuckerberg
+    name: delta-share
+
+brews:
+  - description: "The command line tool for the CZI Databricks Delta Share short-lived tokens."
+    repository:
+      owner: chanzuckerberg
+      name: homebrew-tap
+    homepage: "https://github.com/chanzuckerberg/delta-share-artifacts"
+    test: system "#{bin}/delta-share version"
