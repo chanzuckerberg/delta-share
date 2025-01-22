@@ -6,7 +6,7 @@ ARG IMAGE_TAG
 RUN apk update 
 RUN apk --update add --no-cache git tzdata
 ADD . .
-RUN GOPROXY=direct go build -ldflags "-X 'main.tag=${IMAGE_TAG}'" -o api
+RUN GOPROXY=direct go build -o api .
 
 FROM 533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/library/alpine:3
 WORKDIR /app
