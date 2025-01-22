@@ -141,7 +141,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Recipient '%s' does not exist.\n", recipientName)
+	fmt.Printf("Recipient '%s' does not exist. Please contact admin.\n", recipientName)
 }
 
 func healthHandler(c *fiber.Ctx) error {
