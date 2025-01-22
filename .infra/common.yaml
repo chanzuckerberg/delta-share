@@ -1,0 +1,25 @@
+stack:
+  global:
+    replicaCount: 3
+    autoscaling:
+      enabled: false
+    service:
+      port: 8080
+
+  services:
+    webhook:
+      image:
+        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share/src/webhook
+      ingress:
+        paths:
+        - path: /
+          pathType: Prefix
+      livenessProbe:
+        httpGet:
+          path: /health
+        timeoutSeconds: 10
+      readinessProbe:
+        httpGet:
+          path: /health
+        timeoutSeconds: 10
+          

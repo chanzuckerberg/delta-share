@@ -1,0 +1,6 @@
+stack:
+  services:
+    webhook:
+      image:
+        tag: sha-5be0a05
+      replicaCount: 1

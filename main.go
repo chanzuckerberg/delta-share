@@ -2,17 +2,19 @@ package main
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/chanzuckerberg/go-misc/oidc_cli/v2/oidc_impl"
-
-	"github.com/chanzuckerberg/go-misc/oidc_cli/v2/oidc_impl/client"
-
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
+	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/chanzuckerberg/go-misc/oidc_cli/oidc_impl"
+	"github.com/chanzuckerberg/go-misc/oidc_cli/oidc_impl/client"
+	"github.com/gofiber/fiber/v2"
 )
 
 type Recipient struct {
@@ -23,15 +25,46 @@ type RecipientsResponse struct {
 	Recipients []Recipient `json:"recipients"`
 }
 
+var (
+	// Set using argus set secrets
+	databricksPAT    = os.Getenv("DATABRICKS_PAT")
+	cognitoClientID  = os.Getenv("COGNITO_CLIENT_ID")
+	cognitoIssuerURL = os.Getenv("COGNITO_ISSUER_URL")
+)
+
 func main() {
-	clientID := "b8g7vhl1b312isgh5ik3gn6c"
-	issuer := "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_JLABROYbl"
+	if databricksPAT == "" {
+		log.Panic("DATABRICKS_PAT cannot be blank")
+	}
+
+	if cognitoClientID == "" {
+		log.Panic("COGNITO_CLIENT_ID cannot be blank")
+	}
+
+	if cognitoIssuerURL == "" {
+		log.Panic("COGNITO_ISSUER_URL cannot be blank")
+	}
+
+	h := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
+	slog.SetDefault(slog.New(h))
+
+	app := fiber.New()
+
+	app.Use(func(c *fiber.Ctx) error {
+		if c.Path() != "/" && c.Path() != "/health" {
+			logRequest(c)
+		}
+		return c.Next()
+	})
+
+	app.Get("/", healthHandler)
+	app.Get("/health", healthHandler)
+
 	scopes := []string{"openid", "profile", "email"}
 
 	// Apply scopes using SetScopeOptions
 	setScopesOption := client.SetScopeOptions(scopes)
-
-	token, err := oidc_impl.GetToken(context.Background(), clientID, issuer, setScopesOption)
+	token, err := oidc_impl.GetToken(context.Background(), cognitoClientID, cognitoIssuerURL, setScopesOption)
 	if err != nil {
 		panic(err)
 	}
@@ -55,9 +88,10 @@ func main() {
 	email := payload["email"].(string)
 	username := strings.Split(email, "@")[0]
 
+	log.Fatal(app.Listen(":8080"))
+
 	// Replace with your Databricks workspace URL and token
 	databricksURL := "https://czi-shared-infra-czi-sci-general-prod-databricks.cloud.databricks.com"
-	pat := "<insert pat>"
 
 	// The recipient name you want to check
 	recipientName := username
@@ -68,7 +102,7 @@ func main() {
 		fmt.Println("Error creating request:", err)
 		return
 	}
-	req.Header.Set("Authorization", "Bearer "+pat)
+	req.Header.Set("Authorization", "Bearer "+databricksPAT)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -108,4 +142,9 @@ func main() {
 	}
 
 	fmt.Printf("Recipient '%s' does not exist.\n", recipientName)
+}
+
+func healthHandler(c *fiber.Ctx) error {
+	response := fiber.Map{"status": "healthy"}
+	return c.JSON(response)
 }

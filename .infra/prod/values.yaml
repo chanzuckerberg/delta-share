@@ -1,0 +1,9 @@
+stack:
+  services:
+    webhook:
+      image:
+        tag: sha-5be0a05
+      replicaCount: 1
+      ingress:
+        rules:
+          - host: delta-share.prod-sci-general.prod.czi.team

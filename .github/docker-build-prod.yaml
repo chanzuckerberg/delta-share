@@ -1,0 +1,23 @@
+name: Docker Image Build - Prod
+
+on:
+    workflow_dispatch: {}
+    push:
+
+jobs:
+  argus_builder:
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v2.13.2
+    secrets: inherit
+    with:
+      envs: prod
+      branches: main
+      path_filters: '!.infra/**'
+      images: |
+        [
+          {
+            "name": "delta-share",
+            "context": ".",
+            "dockerfile": "Dockerfile",
+            "platform": "linux/amd64"
+          }
+        ]
