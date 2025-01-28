@@ -17,7 +17,7 @@ jobs:
           {
             "name": "delta-share",
             "context": ".",
-            "dockerfile": "Dockerfile",
+            "dockerfile": "./backend/Dockerfile",
             "platform": "linux/amd64"
           }
         ]
