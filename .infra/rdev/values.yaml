@@ -2,5 +2,5 @@ stack:
   services:
     delta-share:
       image:
-        tag: sha-b0d3cf9
+        tag: sha-0b28772
       replicaCount: 1
