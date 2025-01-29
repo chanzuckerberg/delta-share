@@ -1,6 +1,6 @@
 stack:
   services:
-    webhook:
+    delta-share:
       image:
         tag: sha-5be0a05
       replicaCount: 1
