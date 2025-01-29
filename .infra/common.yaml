@@ -9,7 +9,7 @@ stack:
   services:
     delta-share:
       image:
-        repository: 977655849919.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share
+        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share
       ingress:
         paths:
         - path: /
