@@ -25,6 +25,7 @@ type RecipientsResponse struct {
 	Recipients []Recipient `json:"recipients"`
 }
 
+// Environment Variables stored using argus set secrets
 var (
 	databricksPAT = os.Getenv("DATABRICKS_PAT")
 	databricksURL = os.Getenv("DATABRICKS_URL")
