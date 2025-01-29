@@ -77,7 +77,7 @@ func main() {
 		// Return Success Response
 		return c.Status(http.StatusOK).JSON(fiber.Map{
 			"message":        fmt.Sprintf("User %s is a Delta Share recipient", email),
-			"databricks_url": "https://czi-shared-infra-czi-sci-general-prod-databricks.cloud.databricks.com",
+			"databricks_url": databricksURL,
 		})
 	})
 
