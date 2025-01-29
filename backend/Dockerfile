@@ -1,5 +1,5 @@
 # Builder Stage
-FROM docker.io/library/golang:1.22-alpine AS builder
+FROM docker.io/library/golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Build argument for the image tag (if required)
