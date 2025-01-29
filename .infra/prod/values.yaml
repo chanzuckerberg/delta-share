@@ -2,7 +2,7 @@ stack:
   services:
     delta-share:
       image:
-        tag: sha-a4c144c
+        tag: sha-0dbead6
       replicaCount: 1
       ingress:
         rules:
