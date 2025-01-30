@@ -10,7 +10,7 @@ jobs:
     secrets: inherit
     with:
       envs: prod
-      branches: main
+      branches_include: 'main'
       path_filters: '!.infra/**'
       images: |
         [

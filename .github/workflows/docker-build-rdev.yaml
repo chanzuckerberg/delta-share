@@ -10,7 +10,7 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     with:
       envs: rdev
-      branches_ignore: main,release-please--branches--main
+      branches_ignore: 'main,release-please--branches--main'
       path_filters: '!.infra/**'
       images: |
         {
