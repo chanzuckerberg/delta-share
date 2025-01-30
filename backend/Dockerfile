@@ -1,5 +1,5 @@
 # Builder Stage
-FROM docker.io/library/golang:1.23-alpine AS builder
+FROM 533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/library/golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Build argument for the image tag (if required)
