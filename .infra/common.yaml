@@ -5,6 +5,8 @@ stack:
       enabled: false
     service:
       port: 8080
+    nodeSelector:
+      kubernetes.io/arch: amd64
 
   services:
     backend:
