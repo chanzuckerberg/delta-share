@@ -9,7 +9,7 @@ stack:
   services:
     backend:
       image:
-        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share/backend
+        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share/backend/backend
       ingress:
         paths:
         - path: /
