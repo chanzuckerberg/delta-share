@@ -7,9 +7,9 @@ stack:
       port: 8080
 
   services:
-    delta-share:
+    backend:
       image:
-        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share/delta-share
+        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share/backend
       ingress:
         paths:
         - path: /

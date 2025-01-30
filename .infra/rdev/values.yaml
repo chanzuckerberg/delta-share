@@ -1,6 +1,6 @@
 stack:
   services:
-    delta-share:
+    backend:
       image:
         tag: sha-0b28772
       replicaCount: 1
