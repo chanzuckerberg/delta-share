@@ -1,8 +1,8 @@
 stack:
   services:
     backend:
-      image:
-        tag: sha-48ee5de
+      # image:
+      #   tag: sha-48ee5de
       replicaCount: 1
       ingress:
         rules:
