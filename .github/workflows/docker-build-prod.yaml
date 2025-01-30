@@ -14,7 +14,7 @@ jobs:
       path_filters: '!.infra/**'
       images: |
         [
-          {
+          "backend": {
             "context": "./backend/",
             "dockerfile": "./backend/Dockerfile",
             "platform": "linux/amd64"

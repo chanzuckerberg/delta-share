@@ -13,10 +13,10 @@ jobs:
       branches_ignore: main,release-please--branches--main
       path_filters: '!.infra/**'
       images: |
-        [
-          {
+        {
+          "backend": {
             "context": "./backend/",
             "dockerfile": "./backend/Dockerfile",
             "platform": "linux/amd64"
           }
-        ]
+        }
