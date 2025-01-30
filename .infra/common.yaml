@@ -8,6 +8,11 @@ stack:
 
   services:
     delta-share:
+      serviceAccount:
+        create: true
+        automount: true
+        annotations:
+          "eks.amazonaws.com/role-arn": arn:aws:iam::533267185808:role/argo_root_core_platform_infra_prod_eks
       image:
         repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/delta-share
       ingress:
