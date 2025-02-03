@@ -17,7 +17,7 @@ var (
 	databricksPAT     = os.Getenv("DATABRICKS_PAT")
 	cognitoIssuer     = os.Getenv("COGNITO_ISSUER")
 	databricksURL     = os.Getenv("DATABRICKS_URL")
-	databricksAPIBase = fmt.Sprintf("https://%s/api/2.1/unity-catalog/recipients", databricksURL)
+	databricksAPIBase = fmt.Sprintf("%s/api/2.1/unity-catalog/recipients", databricksURL)
 )
 
 // TokenRequest represents the request body for verifying a token
