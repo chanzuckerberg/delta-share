@@ -120,7 +120,10 @@ func validateCognitoToken(token string) (string, error) {
 
 // queryDatabricksForRecipient checks if a recipient exists based on the provided email.
 func queryDatabricksForRecipient(email string) (bool, error) {
-	url := fmt.Sprintf("%s/%s", databricksURL+"/api/2.1/unity-catalog/recipients", email)
+	// We cannot use email as the recipient name because name cannot include period, space, or forward-slash
+	// All recipient names in Databricks should be the username of the email address
+	recipientName := strings.Split(email, "@")[0]
+	url := fmt.Sprintf("%s/%s", databricksURL+"/api/2.1/unity-catalog/recipients", recipientName)
 
 	// Make the API request
 	req, err := http.NewRequest("GET", url, nil)
