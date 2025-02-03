@@ -134,7 +134,7 @@ func rotateToken(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
-	resp, err := makeRequest("PUT", url, nil)
+	resp, err := makeRequest("POST", url, nil)
 	if err != nil {
 		return "", err
 	}
