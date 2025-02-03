@@ -127,7 +127,7 @@ func queryDatabricksForRecipient(email string) (bool, error) {
 		return false, fmt.Errorf("error creating request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+databricksPAT)
-	fmt.Println("Request: ", req)
+	fmt.Printf("Request: %v\n", req)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -143,7 +143,7 @@ func queryDatabricksForRecipient(email string) (bool, error) {
 	// Parse the response
 	var recipientsResponse RecipientsResponse
 	if err := json.NewDecoder(resp.Body).Decode(&recipientsResponse); err != nil {
-		return false, fmt.Errorf("allison error parsing response: %w", err)
+		return false, fmt.Errorf("error parsing response: %w", err)
 	}
 
 	// Check if the email matches any recipient
