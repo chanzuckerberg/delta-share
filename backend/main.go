@@ -127,6 +127,7 @@ func queryDatabricksForRecipient(email string) (bool, error) {
 		return false, fmt.Errorf("error creating request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+databricksPAT)
+	fmt.Println("Request: ", req)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
