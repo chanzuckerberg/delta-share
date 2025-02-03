@@ -20,12 +20,20 @@ var (
 	databricksAPIBase = fmt.Sprintf("%s/api/2.1/unity-catalog/recipients", databricksURL)
 )
 
+const (
+	expirationInSeconds = 604800 // 7 days in seconds
+)
+
 // TokenRequest represents the request body for verifying a token
 type TokenRequest struct {
 	Token string `json:"token"`
 }
 
-// RecipientResponse represents recipient details
+type RecipientRequest struct {
+	Name               string `json:"name"`
+	AuthenticationType string `json:"authentication_type"`
+}
+
 type RecipientResponse struct {
 	Name           string `json:"name"`
 	ActivationLink string `json:"activation_link"`
@@ -36,13 +44,10 @@ type RecipientResponse struct {
 	} `json:"token_info"`
 }
 
-// RecipientRequest represents the request body for creating a recipient
-type RecipientRequest struct {
-	Name               string `json:"name"`
-	AuthenticationType string `json:"authentication_type"`
+type TokenRotationRequest struct {
+	ExistingTokenExpireInSeconds int `json:"existing_token_expire_in_seconds"`
 }
 
-// TokenRotationResponse represents the response when rotating a token
 type TokenRotationResponse struct {
 	Token          string `json:"token"`
 	ActivationLink string `json:"activation_link"`
@@ -130,11 +135,18 @@ func createRecipient(email string) (string, error) {
 	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
 }
 
-func rotateToken(email string) (string, error) {
+// rotateToken rotates the recipient’s token and returns the new token.
+func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
-	resp, err := makeRequest("POST", url, nil)
+	// Prepare the request body
+	payload := TokenRotationRequest{
+		ExistingTokenExpireInSeconds: expireInSeconds, // This will define when the old token expires
+	}
+
+	resp, err := makeRequest("POST", url, payload)
+	fmt.Printf("Made the response")
 	if err != nil {
 		return "", err
 	}
@@ -235,7 +247,7 @@ func main() {
 
 		if expirationTime < currentTime {
 			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Name)
-			newToken, err := rotateToken(email)
+			newToken, err := rotateToken(email, expirationInSeconds)
 			if err != nil {
 				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 					"error": "Error rotating token: " + err.Error(),
