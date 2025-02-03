@@ -20,7 +20,6 @@ type TokenRequest struct {
 type Recipient struct {
 	Name string `json:"name"`
 }
-
 type RecipientsResponse struct {
 	Recipients []Recipient `json:"recipients"`
 }
@@ -119,15 +118,17 @@ func validateCognitoToken(token string) (string, error) {
 	return email, nil
 }
 
-// Query the Databricks API to check for Delta Share recipient
+// queryDatabricksForRecipient checks if a recipient exists based on the provided email.
 func queryDatabricksForRecipient(email string) (bool, error) {
+	url := fmt.Sprintf("%s/%s", databricksURL+"/api/2.1/unity-catalog/recipients", email)
+
 	// Make the API request
-	req, err := http.NewRequest("GET", databricksURL, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return false, fmt.Errorf("error creating request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+databricksPAT)
-	fmt.Printf("Request: %v\n", req)
+	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -136,22 +137,12 @@ func queryDatabricksForRecipient(email string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("received status code %d from Databricks", resp.StatusCode)
+	// Handle HTTP response status codes
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	} else {
+		return false, fmt.Errorf("unexpected response: %d", resp.StatusCode)
 	}
-
-	// Parse the response
-	var recipientsResponse RecipientsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&recipientsResponse); err != nil {
-		return false, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	// Check if the email matches any recipient
-	for _, recipient := range recipientsResponse.Recipients {
-		if recipient.Name == strings.Split(email, "@")[0] {
-			return true, nil
-		}
-	}
-
-	return false, nil
 }
