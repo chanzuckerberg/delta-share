@@ -139,6 +139,8 @@ func rotateToken(email string) (string, error) {
 		return "", err
 	}
 
+	fmt.Printf("Response: %v\n", resp)
+
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.NewDecoder(resp.Body).Decode(&rotationResponse); err != nil {
