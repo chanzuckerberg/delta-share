@@ -158,7 +158,7 @@ func createRecipient(email string) (string, error) {
 	fmt.Printf("Databricks Create Recipient Response (Status %d): %s\n", resp.StatusCode, string(body))
 
 	// ✅ Handle successful recipient creation
-	if resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusOK {
 		var recipientResponse RecipientResponse
 		if err := json.Unmarshal(body, &recipientResponse); err != nil {
 			return "", fmt.Errorf("error parsing create-recipient response JSON: %w", err)
