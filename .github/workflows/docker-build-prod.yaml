@@ -23,4 +23,4 @@ jobs:
               }
             }
       - name: Debug
-        run: echo "all outputs from prep: ${{ steps.argus_builder.outputs }}"
+        run: echo "all outputs from prep ${{ steps.argus_builder.outputs }}"
