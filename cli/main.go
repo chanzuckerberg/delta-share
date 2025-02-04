@@ -37,26 +37,24 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		fmt.Printf("Error from backend: %s\n", body)
-		return
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response:", err)
 		return
 	}
 
-	// Define a struct to parse the JSON response
+	// Handle non-200 responses
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Error from backend (Status %d): %s\n", resp.StatusCode, string(body))
+		return
+	}
+
+	// Parse JSON response
 	var response struct {
 		Message        string `json:"message"`
-		Token          string `json:"token"`
 		ActivationLink string `json:"activation_link"`
 	}
 
-	// Parse the JSON response
 	if err := json.Unmarshal(body, &response); err != nil {
 		fmt.Println("Error parsing response:", err)
 		return

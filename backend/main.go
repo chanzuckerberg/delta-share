@@ -20,11 +20,8 @@ var (
 	databricksAPIBase = fmt.Sprintf("%s/api/2.1/unity-catalog/recipients", databricksURL)
 )
 
-const (
-	expirationInSeconds = 604800 // 7 days in seconds
-)
+const expirationInSeconds = 604800 // 7 days
 
-// TokenRequest represents the request body for verifying a token
 type TokenRequest struct {
 	Token string `json:"token"`
 }
@@ -36,11 +33,13 @@ type RecipientRequest struct {
 }
 
 type RecipientResponse struct {
-	Name   string `json:"name"`
-	Tokens []struct {
-		ActivationURL  string `json:"activation_url"`
-		ExpirationTime int64  `json:"expiration_time"`
-	} `json:"tokens"`
+	Name   string         `json:"name"`
+	Tokens []TokenDetails `json:"tokens"`
+}
+
+type TokenDetails struct {
+	ActivationURL  string `json:"activation_url"`
+	ExpirationTime int64  `json:"expiration_time"`
 }
 
 type TokenRotationRequest struct {
@@ -48,10 +47,7 @@ type TokenRotationRequest struct {
 }
 
 type TokenRotationResponse struct {
-	Tokens []struct {
-		ActivationURL  string `json:"activation_url"`
-		ExpirationTime int64  `json:"expiration_time"`
-	} `json:"tokens"`
+	Tokens []TokenDetails `json:"tokens"`
 }
 
 func validateCognitoToken(token string) (string, error) {
@@ -60,24 +56,20 @@ func validateCognitoToken(token string) (string, error) {
 		return "", fmt.Errorf("invalid token format")
 	}
 
-	// Decode the payload (middle part of the JWT)
 	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
 		return "", fmt.Errorf("error decoding token payload: %w", err)
 	}
 
-	// Parse the payload as JSON
 	var payload map[string]interface{}
 	if err := json.Unmarshal(payloadBytes, &payload); err != nil {
 		return "", fmt.Errorf("error parsing token payload: %w", err)
 	}
 
-	// Ensure the token is issued by your Cognito issuer
 	if payload["iss"] != cognitoIssuer {
 		return "", fmt.Errorf("token issuer is invalid")
 	}
 
-	// Extract and return the email
 	email, ok := payload["email"].(string)
 	if !ok {
 		return "", fmt.Errorf("email not found in token")
@@ -86,7 +78,7 @@ func validateCognitoToken(token string) (string, error) {
 	return email, nil
 }
 
-// queryRecipient checks if a recipient exists and returns its token info.
+// Query Databricks API for recipient info
 func queryRecipient(email string) (*RecipientResponse, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s", databricksAPIBase, recipientName)
@@ -95,6 +87,7 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
@@ -104,12 +97,12 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 		return &recipient, nil
 	} else if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
-	} else {
-		return nil, fmt.Errorf("unexpected response: %d", resp.StatusCode)
 	}
+
+	return nil, fmt.Errorf("unexpected response: %d", resp.StatusCode)
 }
 
-// createRecipient creates a new recipient with token authentication and returns the token.
+// Create a new recipient in Databricks
 func createRecipient(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := databricksAPIBase
@@ -124,12 +117,18 @@ func createRecipient(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusCreated {
 		var recipient RecipientResponse
 		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
 			return "", fmt.Errorf("error parsing recipient response: %w", err)
 		}
+
+		if len(recipient.Tokens) == 0 {
+			return "", fmt.Errorf("no tokens returned for new recipient")
+		}
+
 		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Tokens[0].ActivationURL)
 		return recipient.Tokens[0].ActivationURL, nil
 	}
@@ -137,27 +136,28 @@ func createRecipient(email string) (string, error) {
 	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
 }
 
-// rotateToken rotates the recipient’s token and returns the new token.
+// Rotate an expired token
 func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
-	// Prepare the request body
-	payload := TokenRotationRequest{
-		ExistingTokenExpireInSeconds: expireInSeconds,
-	}
-
+	payload := TokenRotationRequest{ExistingTokenExpireInSeconds: expireInSeconds}
 	resp, err := makeRequest("POST", url, payload)
-
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.NewDecoder(resp.Body).Decode(&rotationResponse); err != nil {
 			return "", fmt.Errorf("error parsing token rotation response: %w", err)
 		}
+
+		if len(rotationResponse.Tokens) == 0 {
+			return "", fmt.Errorf("no tokens returned after rotation")
+		}
+
 		fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.Tokens[0].ActivationURL)
 		return rotationResponse.Tokens[0].ActivationURL, nil
 	}
@@ -165,7 +165,7 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	return "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
 }
 
-// makeRequest is a helper function to send HTTP requests
+// Send HTTP requests
 func makeRequest(method, url string, payload interface{}) (*http.Response, error) {
 	client := &http.Client{}
 
@@ -192,56 +192,40 @@ func makeRequest(method, url string, payload interface{}) (*http.Response, error
 func main() {
 	app := fiber.New()
 
-	// Health Check Endpoint
+	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"status": "healthy",
-		})
+		return c.Status(http.StatusOK).JSON(fiber.Map{"status": "healthy"})
 	})
 
 	// Token Verification & Databricks Recipient Handling
 	app.Post("/verify-token", func(c *fiber.Ctx) error {
 		var tokenRequest TokenRequest
 
-		// Parse the incoming JSON body
 		if err := c.BodyParser(&tokenRequest); err != nil {
-			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-				"error": "Invalid request body",
-			})
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 		}
 
-		// Decode and Validate the Cognito Token
 		email, err := validateCognitoToken(tokenRequest.Token)
 		if err != nil {
-			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid token: " + err.Error(),
-			})
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token: " + err.Error()})
 		}
 
-		// Query Databricks API for Delta Share recipient
 		recipient, err := queryRecipient(email)
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Error querying Databricks: " + err.Error(),
-			})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error querying Databricks: " + err.Error()})
 		}
 
-		// If recipient does not exist, create one
+		// Create recipient if not found
 		if recipient == nil {
 			fmt.Printf("Recipient for email '%s' does not exist. Creating...\n", email)
 			token, err := createRecipient(email)
 			if err != nil {
-				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-					"error": "Error creating recipient: " + err.Error(),
-				})
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error creating recipient: " + err.Error()})
 			}
-			return c.Status(http.StatusOK).JSON(fiber.Map{
-				"message": fmt.Sprintf("New recipient created for %s", email),
-				"token":   token,
-			})
+			return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("New recipient created for %s", email), "activation_link": token})
 		}
 
-		// Recipient exists but token is expired, so rotate it
+		// Check token expiration
 		expirationTime := recipient.Tokens[0].ExpirationTime
 		currentTime := time.Now().Unix()
 
@@ -249,23 +233,13 @@ func main() {
 			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Name)
 			activationLink, err := rotateToken(email, expirationInSeconds)
 			if err != nil {
-				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
-					"error": "Error rotating token: " + err.Error(),
-				})
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error rotating token: " + err.Error()})
 			}
-			return c.Status(http.StatusOK).JSON(fiber.Map{
-				"message":         fmt.Sprintf("Token for %s rotated.", email),
-				"activation_link": activationLink,
-			})
+			return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s rotated", email), "activation_link": activationLink})
 		}
 
-		// Recipient exists and token is still valid
-		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message":         fmt.Sprintf("Token for %s is still valid", email),
-			"activation_link": recipient.Tokens[0].ActivationURL,
-		})
+		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Tokens[0].ActivationURL})
 	})
 
-	// Start the Fiber app
 	log.Fatal(app.Listen(":8080"))
 }
