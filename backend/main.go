@@ -87,6 +87,7 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s", databricksAPIBase, recipientName)
 
+	fmt.Printf("Querying using URL %s\n", url)
 	resp, err := makeRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
