@@ -7,7 +7,7 @@ jobs:
     name: Docker Image Build - Prod
     runs-on: [ARM64, self-hosted, Linux]
     steps:
-      - argus_builder:
+      - name: Argus docker build
         uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
         secrets: inherit
         with:
