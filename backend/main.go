@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -94,6 +93,8 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
+		fmt.Printf("Recipient response body: %+v\n", resp.Body)
+		fmt.Print(json.NewDecoder(resp.Body).Decode(&recipient))
 		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
 			return nil, fmt.Errorf("error parsing recipient response: %w", err)
 		}
@@ -131,8 +132,9 @@ func createRecipient(email string) (string, error) {
 			return "", fmt.Errorf("no tokens returned for new recipient")
 		}
 
-		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Recipients[0].Tokens[0].ActivationURL)
-		return recipient.Recipients[0].Tokens[0].ActivationURL, nil
+		// fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Recipients[0].Tokens[0].ActivationURL)
+		// return recipient.Recipients[0].Tokens[0].ActivationURL, nil
+		return "trying to send activation link", nil
 	}
 
 	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
@@ -159,8 +161,9 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 			return "", fmt.Errorf("no tokens returned after rotation")
 		}
 
-		fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.Tokens[0].ActivationURL)
-		return rotationResponse.Tokens[0].ActivationURL, nil
+		// fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.Tokens[0].ActivationURL)
+		// return rotationResponse.Tokens[0].ActivationURL, nil
+		return "trying to send activation link", nil
 	}
 
 	return "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
@@ -228,19 +231,19 @@ func main() {
 
 		// Check token expiration
 		fmt.Printf("Recipient response: %+v\n", recipient)
-		expirationTime := recipient.Recipients[0].Tokens[0].ExpirationTime
-		currentTime := time.Now().Unix()
+		// expirationTime := recipient.Recipients[0].Tokens[0].ExpirationTime
+		// currentTime := time.Now().Unix()
 
-		if expirationTime < currentTime {
-			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Recipients[0].Name)
-			activationLink, err := rotateToken(email, expirationInSeconds)
-			if err != nil {
-				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error rotating token: " + err.Error()})
-			}
-			return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s rotated", email), "activation_link": activationLink})
-		}
+		// if expirationTime < currentTime {
+		// 	fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Recipients[0].Name)
+		// 	activationLink, err := rotateToken(email, expirationInSeconds)
+		// 	if err != nil {
+		// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error rotating token: " + err.Error()})
+		// 	}
+		// 	return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s rotated", email), "activation_link": activationLink})
+		// }
 
-		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Recipients[0].Tokens[0].ActivationURL})
+		// return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Recipients[0].Tokens[0].ActivationURL})
 	})
 
 	log.Fatal(app.Listen(":8080"))
