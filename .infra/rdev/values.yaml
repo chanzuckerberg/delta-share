@@ -2,5 +2,5 @@ stack:
   services:
     backend:
       image:
-        tag: sha-2fe4525
+        tag: sha-c3e4af7
       replicaCount: 1
