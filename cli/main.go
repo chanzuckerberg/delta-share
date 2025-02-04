@@ -25,7 +25,8 @@ func main() {
 	}
 
 	// Send the token to the backend
-	backendURL := "https://delta-share.prod-sci-general.prod.czi.team/verify-token"
+	// backendURL := "https://delta-share.prod-sci-general.prod.czi.team/verify-token"
+	backendURL := "https://electric-osprey.dev-sci-general.dev.czi.team/verify-token"
 	reqBody := map[string]string{"token": token.IDToken}
 	reqBodyJSON, _ := json.Marshal(reqBody)
 
@@ -36,11 +37,32 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		fmt.Printf("Error from backend: %s\n", body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
 		return
 	}
 
-	fmt.Println("User successfully verified!")
+	// Handle non-200 responses
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Error from backend (Status %d): %s\n", resp.StatusCode, string(body))
+		return
+	}
+
+	// Parse JSON response
+	var response struct {
+		Message        string `json:"message"`
+		ActivationLink string `json:"activation_link"`
+	}
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		fmt.Println("Error parsing response:", err)
+		return
+	}
+
+	// Print the success message and activation link
+	fmt.Println(response.Message)
+	if response.ActivationLink != "" {
+		fmt.Println("Activation Link:", response.ActivationLink)
+	}
 }
