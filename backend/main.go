@@ -177,7 +177,6 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
-	// Prepare the request payload
 	payload := TokenRotationRequest{
 		ExistingTokenExpireInSeconds: expireInSeconds,
 	}
@@ -188,7 +187,6 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read full response body for debugging
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading Databricks rotate-token response body: %w", err)
@@ -197,23 +195,16 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	// 🔹 Log full response for debugging
 	fmt.Printf("Databricks Rotate Token Response (Status %d): %s\n", resp.StatusCode, string(body))
 
-	// Check for successful response
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.Unmarshal(body, &rotationResponse); err != nil {
 			return "", fmt.Errorf("error parsing rotate-token response JSON: %w", err)
 		}
 
-		// ✅ Ensure at least one token exists in the response
-		if len(rotationResponse.Tokens) == 0 {
-			return "", fmt.Errorf("rotate-token API returned no tokens")
-		}
+		token := rotationResponse.Tokens[0]
 
-		// ✅ Extract the latest token (assuming last token in the list is the most recent)
-		latestToken := rotationResponse.Tokens[len(rotationResponse.Tokens)-1]
-
-		fmt.Printf("Token rotated successfully. New activation link: %s\n", latestToken.ActivationURL)
-		return latestToken.ActivationURL, nil
+		fmt.Printf("Token rotated successfully. New activation link: %s\n", token.ActivationURL)
+		return token.ActivationURL, nil
 	}
 
 	// Handle unexpected responses
