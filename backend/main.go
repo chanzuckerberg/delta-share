@@ -244,6 +244,7 @@ func main() {
 		// }
 
 		// return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Recipients[0].Tokens[0].ActivationURL})
+		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": "trying to send activation link"})
 	})
 
 	log.Fatal(app.Listen(":8080"))
