@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -91,10 +92,15 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 		return nil, err
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading Databricks response body: %w", err)
+	}
+
+	fmt.Printf("Databricks Response (Status %d): %s\n", resp.StatusCode, string(body))
+
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
-		fmt.Printf("Recipient response body: %+v\n", resp.Body)
-		fmt.Print(json.NewDecoder(resp.Body).Decode(&recipient))
 		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
 			return nil, fmt.Errorf("error parsing recipient response: %w", err)
 		}
