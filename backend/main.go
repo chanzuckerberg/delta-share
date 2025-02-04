@@ -91,7 +91,6 @@ func queryRecipient(email string) (*RecipientResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
@@ -121,7 +120,6 @@ func createRecipient(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusCreated {
 		var recipient RecipientResponse
@@ -150,7 +148,6 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
