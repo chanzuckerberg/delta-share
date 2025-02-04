@@ -21,6 +21,7 @@ jobs:
           }
         }
   debug_argus_builder:
+    runs_on: [ARM64, self-hosted, Linux]
     needs: argus_builder
     steps:
       - name: Debug
