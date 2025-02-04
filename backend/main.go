@@ -30,8 +30,9 @@ type TokenRequest struct {
 }
 
 type RecipientRequest struct {
-	Name               string `json:"name"`
-	AuthenticationType string `json:"authentication_type"`
+	Name                string `json:"name"`
+	AuthenticationType  string `json:"authentication_type"`
+	TokenExpirationTime int    `json:"token_expiration_time"`
 }
 
 type RecipientResponse struct {
@@ -114,8 +115,9 @@ func createRecipient(email string) (string, error) {
 	url := databricksAPIBase
 
 	payload := RecipientRequest{
-		Name:               recipientName,
-		AuthenticationType: "TOKEN",
+		Name:                recipientName,
+		AuthenticationType:  "TOKEN",
+		TokenExpirationTime: expirationInSeconds,
 	}
 
 	resp, err := makeRequest("POST", url, payload)
@@ -136,7 +138,7 @@ func createRecipient(email string) (string, error) {
 }
 
 // rotateToken rotates the recipient’s token and returns the new token.
-func rotateToken(email string, expireInSeconds int) (string, error) {
+func rotateToken(email string, expireInSeconds int) (string, string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
@@ -148,21 +150,19 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	resp, err := makeRequest("POST", url, payload)
 	fmt.Printf("Made the response")
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-
-	fmt.Printf("Response: %v\n", resp)
 
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.NewDecoder(resp.Body).Decode(&rotationResponse); err != nil {
-			return "", fmt.Errorf("error parsing token rotation response: %w", err)
+			return "", "", fmt.Errorf("error parsing token rotation response: %w", err)
 		}
 		fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.ActivationLink)
-		return rotationResponse.Token, nil
+		return rotationResponse.Token, rotationResponse.ActivationLink, nil
 	}
 
-	return "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
+	return "", "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
 }
 
 // makeRequest is a helper function to send HTTP requests
@@ -247,22 +247,24 @@ func main() {
 
 		if expirationTime < currentTime {
 			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Name)
-			newToken, err := rotateToken(email, expirationInSeconds)
+			newToken, activationLink, err := rotateToken(email, expirationInSeconds)
 			if err != nil {
 				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 					"error": "Error rotating token: " + err.Error(),
 				})
 			}
 			return c.Status(http.StatusOK).JSON(fiber.Map{
-				"message": fmt.Sprintf("Token for %s rotated", email),
-				"token":   newToken,
+				"message":         fmt.Sprintf("Token for %s rotated", email),
+				"token":           newToken,
+				"activation_link": activationLink,
 			})
 		}
 
-		// Token is still valid
+		// Recipient exists and token is still valid
 		return c.Status(http.StatusOK).JSON(fiber.Map{
-			"message": fmt.Sprintf("Token for %s is still valid", email),
-			"token":   recipient.TokenInfo.Token,
+			"message":         fmt.Sprintf("Token for %s is still valid", email),
+			"token":           recipient.TokenInfo.Token,
+			"activation_link": recipient.TokenInfo.ActivationURL,
 		})
 	})
 

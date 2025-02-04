@@ -43,5 +43,28 @@ func main() {
 		return
 	}
 
-	fmt.Println("User successfully verified!")
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+
+	// Define a struct to parse the JSON response
+	var response struct {
+		Message        string `json:"message"`
+		Token          string `json:"token"`
+		ActivationLink string `json:"activation_link"`
+	}
+
+	// Parse the JSON response
+	if err := json.Unmarshal(body, &response); err != nil {
+		fmt.Println("Error parsing response:", err)
+		return
+	}
+
+	// Print the success message and activation link
+	fmt.Println(response.Message)
+	if response.ActivationLink != "" {
+		fmt.Println("Activation Link:", response.ActivationLink)
+	}
 }
