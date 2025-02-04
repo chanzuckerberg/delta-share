@@ -136,31 +136,6 @@ func createRecipient(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := databricksAPIBase
 
-	// ✅ First, check if the recipient already exists
-	recipient, hasTokens, err := queryRecipient(email)
-	if err != nil {
-		return "", fmt.Errorf("error checking recipient existence: %w", err)
-	}
-
-	// ✅ If recipient already exists and has tokens, return its activation link
-	if recipient != nil && hasTokens {
-		fmt.Printf("Recipient '%s' already exists and has a valid token.\n", recipient.Name)
-		return recipient.Tokens[0].ActivationURL, nil
-	}
-
-	// ✅ If recipient exists but has no tokens, rotate a new token
-	if recipient != nil && !hasTokens {
-		fmt.Printf("Recipient '%s' exists but has no tokens. Rotating a new token...\n", recipient.Name)
-		activationLink, err := rotateToken(email, expirationInSeconds)
-		if err != nil {
-			return "", fmt.Errorf("error rotating token: %w", err)
-		}
-		return activationLink, nil
-	}
-
-	// ✅ If recipient is not found, create a new one
-	fmt.Printf("Recipient '%s' does not exist. Creating new recipient...\n", recipientName)
-
 	payload := RecipientRequest{
 		Name:                recipientName,
 		AuthenticationType:  "TOKEN",
@@ -187,11 +162,6 @@ func createRecipient(email string) (string, error) {
 		var recipientResponse RecipientResponse
 		if err := json.Unmarshal(body, &recipientResponse); err != nil {
 			return "", fmt.Errorf("error parsing create-recipient response JSON: %w", err)
-		}
-
-		// ✅ Ensure at least one token exists in the response
-		if len(recipientResponse.Tokens) == 0 {
-			return "", fmt.Errorf("create-recipient API returned no tokens")
 		}
 
 		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipientResponse.Tokens[0].ActivationURL)
