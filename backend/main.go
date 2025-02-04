@@ -157,7 +157,7 @@ func createRecipient(email string) (string, error) {
 	// 🔹 Log full response for debugging
 	fmt.Printf("Databricks Create Recipient Response (Status %d): %s\n", resp.StatusCode, string(body))
 
-	// ✅ Handle successful recipient creation
+	// ✅ Handle successful recipient creation, returns a status 200 if successful
 	if resp.StatusCode == http.StatusOK {
 		var recipientResponse RecipientResponse
 		if err := json.Unmarshal(body, &recipientResponse); err != nil {
