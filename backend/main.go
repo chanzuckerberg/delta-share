@@ -254,7 +254,7 @@ func main() {
 				})
 			}
 			return c.Status(http.StatusOK).JSON(fiber.Map{
-				"message":         fmt.Sprintf("Token for %s rotated", email),
+				"message":         fmt.Sprintf("Token for %s rotated. Activation link is: %s", email, activationLink),
 				"token":           newToken,
 				"activation_link": activationLink,
 			})
