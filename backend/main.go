@@ -36,13 +36,11 @@ type RecipientRequest struct {
 }
 
 type RecipientResponse struct {
-	Name           string `json:"name"`
-	ActivationLink string `json:"activation_link"`
-	TokenInfo      struct {
+	Name   string `json:"name"`
+	Tokens []struct {
 		ActivationURL  string `json:"activation_url"`
 		ExpirationTime int64  `json:"expiration_time"`
-		Token          string `json:"token"`
-	} `json:"token_info"`
+	} `json:"tokens"`
 }
 
 type TokenRotationRequest struct {
@@ -132,8 +130,8 @@ func createRecipient(email string) (string, error) {
 		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
 			return "", fmt.Errorf("error parsing recipient response: %w", err)
 		}
-		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.ActivationLink)
-		return recipient.TokenInfo.Token, nil
+		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Tokens[0].ActivationURL)
+		return recipient.Tokens[0].ActivationURL, nil
 	}
 
 	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
@@ -244,7 +242,7 @@ func main() {
 		}
 
 		// Recipient exists but token is expired, so rotate it
-		expirationTime := recipient.TokenInfo.ExpirationTime
+		expirationTime := recipient.Tokens[0].ExpirationTime
 		currentTime := time.Now().Unix()
 
 		if expirationTime < currentTime {
@@ -264,8 +262,7 @@ func main() {
 		// Recipient exists and token is still valid
 		return c.Status(http.StatusOK).JSON(fiber.Map{
 			"message":         fmt.Sprintf("Token for %s is still valid", email),
-			"token":           recipient.TokenInfo.Token,
-			"activation_link": recipient.TokenInfo.ActivationURL,
+			"activation_link": recipient.Tokens[0].ActivationURL,
 		})
 	})
 
