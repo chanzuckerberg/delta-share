@@ -33,17 +33,31 @@ type RecipientRequest struct {
 }
 
 type RecipientResponse struct {
-	Recipients []RecipientDetails `json:"recipients"`
+	Name               string         `json:"name"`
+	AuthenticationType string         `json:"authentication_type"`
+	Owner              string         `json:"owner"`
+	CreatedAt          int64          `json:"created_at"`
+	UpdatedAt          int64          `json:"updated_at"`
+	FullName           string         `json:"full_name"`
+	SecurableType      string         `json:"securable_type"`
+	SecurableKind      string         `json:"securable_kind"`
+	ID                 string         `json:"id"`
+	Tokens             []TokenDetails `json:"tokens,omitempty"`
+}
+
+type TokenDetails struct {
+	ID             string `json:"id"`
+	ActivationURL  string `json:"activation_url"`
+	ExpirationTime int64  `json:"expiration_time"`
+	CreatedAt      int64  `json:"created_at"`
+	CreatedBy      string `json:"created_by"`
+	UpdatedAt      int64  `json:"updated_at"`
+	UpdatedBy      string `json:"updated_by"`
 }
 
 type RecipientDetails struct {
 	Name   string         `json:"name"`
 	Tokens []TokenDetails `json:"tokens"`
-}
-
-type TokenDetails struct {
-	ActivationURL  string `json:"activation_url"`
-	ExpirationTime int64  `json:"expiration_time"`
 }
 
 type TokenRotationRequest struct {
@@ -82,41 +96,70 @@ func validateCognitoToken(token string) (string, error) {
 	return email, nil
 }
 
-// Query Databricks API for recipient info
-func queryRecipient(email string) (*RecipientResponse, error) {
+func queryRecipient(email string) (*RecipientResponse, bool, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s", databricksAPIBase, recipientName)
 
-	fmt.Printf("Querying using URL %s\n", url)
 	resp, err := makeRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, false, fmt.Errorf("error making request to Databricks: %w", err)
 	}
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading Databricks response body: %w", err)
+		return nil, false, fmt.Errorf("error reading Databricks response body: %w", err)
 	}
 
+	// 🔹 Log full response for debugging
 	fmt.Printf("Databricks Response (Status %d): %s\n", resp.StatusCode, string(body))
 
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
-		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
-			return nil, fmt.Errorf("error parsing recipient response: %w", err)
+		if err := json.Unmarshal(body, &recipient); err != nil {
+			return nil, false, fmt.Errorf("error parsing recipient response JSON: %w", err)
 		}
-		return &recipient, nil
+
+		// ✅ Check if `tokens` exists and has at least one entry
+		hasTokens := len(recipient.Tokens) > 0
+
+		return &recipient, hasTokens, nil
 	} else if resp.StatusCode == http.StatusNotFound {
-		return nil, nil
+		return nil, false, nil // Recipient does not exist
 	}
 
-	return nil, fmt.Errorf("unexpected response: %d", resp.StatusCode)
+	return nil, false, fmt.Errorf("unexpected Databricks response: %d - %s", resp.StatusCode, string(body))
 }
 
 // Create a new recipient in Databricks
 func createRecipient(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := databricksAPIBase
+
+	// ✅ First, check if the recipient already exists
+	recipient, hasTokens, err := queryRecipient(email)
+	if err != nil {
+		return "", fmt.Errorf("error checking recipient existence: %w", err)
+	}
+
+	// ✅ If recipient already exists and has tokens, return its activation link
+	if recipient != nil && hasTokens {
+		fmt.Printf("Recipient '%s' already exists and has a valid token.\n", recipient.Name)
+		return recipient.Tokens[0].ActivationURL, nil
+	}
+
+	// ✅ If recipient exists but has no tokens, rotate a new token
+	if recipient != nil && !hasTokens {
+		fmt.Printf("Recipient '%s' exists but has no tokens. Rotating a new token...\n", recipient.Name)
+		activationLink, err := rotateToken(email, expirationInSeconds)
+		if err != nil {
+			return "", fmt.Errorf("error rotating token: %w", err)
+		}
+		return activationLink, nil
+	}
+
+	// ✅ If recipient is not found, create a new one
+	fmt.Printf("Recipient '%s' does not exist. Creating new recipient...\n", recipientName)
 
 	payload := RecipientRequest{
 		Name:                recipientName,
@@ -126,25 +169,37 @@ func createRecipient(email string) (string, error) {
 
 	resp, err := makeRequest("POST", url, payload)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error making request to create recipient: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body for debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading create-recipient response body: %w", err)
 	}
 
+	// 🔹 Log full response for debugging
+	fmt.Printf("Databricks Create Recipient Response (Status %d): %s\n", resp.StatusCode, string(body))
+
+	// ✅ Handle successful recipient creation
 	if resp.StatusCode == http.StatusCreated {
-		var recipient RecipientResponse
-		if err := json.NewDecoder(resp.Body).Decode(&recipient); err != nil {
-			return "", fmt.Errorf("error parsing recipient response: %w", err)
+		var recipientResponse RecipientResponse
+		if err := json.Unmarshal(body, &recipientResponse); err != nil {
+			return "", fmt.Errorf("error parsing create-recipient response JSON: %w", err)
 		}
 
-		if len(recipient.Recipients) == 0 {
-			return "", fmt.Errorf("no tokens returned for new recipient")
+		// ✅ Ensure at least one token exists in the response
+		if len(recipientResponse.Tokens) == 0 {
+			return "", fmt.Errorf("create-recipient API returned no tokens")
 		}
 
-		// fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Recipients[0].Tokens[0].ActivationURL)
-		// return recipient.Recipients[0].Tokens[0].ActivationURL, nil
-		return "trying to send activation link", nil
+		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipientResponse.Tokens[0].ActivationURL)
+		return recipientResponse.Tokens[0].ActivationURL, nil
 	}
 
-	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
+	// Handle unexpected responses
+	return "", fmt.Errorf("failed to create recipient: %d - %s", resp.StatusCode, string(body))
 }
 
 // Rotate an expired token
@@ -152,28 +207,47 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
-	payload := TokenRotationRequest{ExistingTokenExpireInSeconds: expireInSeconds}
+	// Prepare the request payload
+	payload := TokenRotationRequest{
+		ExistingTokenExpireInSeconds: expireInSeconds,
+	}
+
 	resp, err := makeRequest("POST", url, payload)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error making request to rotate token: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read full response body for debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading Databricks rotate-token response body: %w", err)
 	}
 
+	// 🔹 Log full response for debugging
+	fmt.Printf("Databricks Rotate Token Response (Status %d): %s\n", resp.StatusCode, string(body))
+
+	// Check for successful response
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
-		if err := json.NewDecoder(resp.Body).Decode(&rotationResponse); err != nil {
-			return "", fmt.Errorf("error parsing token rotation response: %w", err)
+		if err := json.Unmarshal(body, &rotationResponse); err != nil {
+			return "", fmt.Errorf("error parsing rotate-token response JSON: %w", err)
 		}
 
+		// ✅ Ensure at least one token exists in the response
 		if len(rotationResponse.Tokens) == 0 {
-			return "", fmt.Errorf("no tokens returned after rotation")
+			return "", fmt.Errorf("rotate-token API returned no tokens")
 		}
 
-		// fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.Tokens[0].ActivationURL)
-		// return rotationResponse.Tokens[0].ActivationURL, nil
-		return "trying to send activation link", nil
+		// ✅ Extract the latest token (assuming last token in the list is the most recent)
+		latestToken := rotationResponse.Tokens[len(rotationResponse.Tokens)-1]
+
+		fmt.Printf("Token rotated successfully. New activation link: %s\n", latestToken.ActivationURL)
+		return latestToken.ActivationURL, nil
 	}
 
-	return "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
+	// Handle unexpected responses
+	return "", fmt.Errorf("failed to rotate token: %d - %s", resp.StatusCode, string(body))
 }
 
 // Send HTTP requests
@@ -221,37 +295,49 @@ func main() {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token: " + err.Error()})
 		}
 
-		recipient, err := queryRecipient(email)
+		// 🔹 Step 1: Check if recipient exists
+		recipient, hasTokens, err := queryRecipient(email)
 		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error querying Databricks: " + err.Error()})
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Error querying Databricks: " + err.Error(),
+			})
 		}
 
-		// Create recipient if not found
+		// 🔹 Step 2: If recipient is missing, create it
 		if recipient == nil {
-			fmt.Printf("Recipient for email '%s' does not exist. Creating...\n", email)
-			token, err := createRecipient(email)
+			fmt.Printf("⚠️ Recipient for email '%s' does not exist. Creating...\n", email)
+			activationLink, err := createRecipient(email)
 			if err != nil {
-				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error creating recipient: " + err.Error()})
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Error creating recipient: " + err.Error(),
+				})
 			}
-			return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("New recipient created for %s", email), "activation_link": token})
+			return c.Status(http.StatusOK).JSON(fiber.Map{
+				"message":         fmt.Sprintf("New recipient created for %s", email),
+				"activation_link": activationLink,
+			})
 		}
 
-		// Check token expiration
-		fmt.Printf("Recipient response: %+v\n", recipient)
-		// expirationTime := recipient.Recipients[0].Tokens[0].ExpirationTime
-		// currentTime := time.Now().Unix()
+		// 🔹 Step 3: If recipient exists but has no token, rotate a new token
+		if !hasTokens {
+			fmt.Printf("⚠️ Recipient '%s' exists but has no tokens. Rotating...\n", recipient.Name)
+			activationLink, err := rotateToken(email, expirationInSeconds)
+			if err != nil {
+				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Error rotating token: " + err.Error(),
+				})
+			}
+			return c.Status(http.StatusOK).JSON(fiber.Map{
+				"message":         fmt.Sprintf("Token for %s rotated", email),
+				"activation_link": activationLink,
+			})
+		}
 
-		// if expirationTime < currentTime {
-		// 	fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Recipients[0].Name)
-		// 	activationLink, err := rotateToken(email, expirationInSeconds)
-		// 	if err != nil {
-		// 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error rotating token: " + err.Error()})
-		// 	}
-		// 	return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s rotated", email), "activation_link": activationLink})
-		// }
-
-		// return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Recipients[0].Tokens[0].ActivationURL})
-		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": "trying to send activation link"})
+		// 🔹 Step 4: If recipient exists and has a valid token, return it
+		return c.Status(http.StatusOK).JSON(fiber.Map{
+			"message":         fmt.Sprintf("Token for %s is still valid", email),
+			"activation_link": recipient.Tokens[0].ActivationURL, // ✅ Safe to access
+		})
 	})
 
 	log.Fatal(app.Listen(":8080"))
