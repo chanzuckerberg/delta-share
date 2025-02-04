@@ -33,6 +33,10 @@ type RecipientRequest struct {
 }
 
 type RecipientResponse struct {
+	Recipients []RecipientDetails `json:"recipients"`
+}
+
+type RecipientDetails struct {
 	Name   string         `json:"name"`
 	Tokens []TokenDetails `json:"tokens"`
 }
@@ -125,12 +129,12 @@ func createRecipient(email string) (string, error) {
 			return "", fmt.Errorf("error parsing recipient response: %w", err)
 		}
 
-		if len(recipient.Tokens) == 0 {
+		if len(recipient.Recipients) == 0 {
 			return "", fmt.Errorf("no tokens returned for new recipient")
 		}
 
-		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Tokens[0].ActivationURL)
-		return recipient.Tokens[0].ActivationURL, nil
+		fmt.Printf("Recipient '%s' created successfully. Activation link: %s\n", recipientName, recipient.Recipients[0].Tokens[0].ActivationURL)
+		return recipient.Recipients[0].Tokens[0].ActivationURL, nil
 	}
 
 	return "", fmt.Errorf("failed to create recipient: %d", resp.StatusCode)
@@ -226,11 +230,11 @@ func main() {
 		}
 
 		// Check token expiration
-		expirationTime := recipient.Tokens[0].ExpirationTime
+		expirationTime := recipient.Recipients[0].Tokens[0].ExpirationTime
 		currentTime := time.Now().Unix()
 
 		if expirationTime < currentTime {
-			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Name)
+			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Recipients[0].Name)
 			activationLink, err := rotateToken(email, expirationInSeconds)
 			if err != nil {
 				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Error rotating token: " + err.Error()})
@@ -238,7 +242,7 @@ func main() {
 			return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s rotated", email), "activation_link": activationLink})
 		}
 
-		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Tokens[0].ActivationURL})
+		return c.Status(http.StatusOK).JSON(fiber.Map{"message": fmt.Sprintf("Token for %s is still valid", email), "activation_link": recipient.Recipients[0].Tokens[0].ActivationURL})
 	})
 
 	log.Fatal(app.Listen(":8080"))
