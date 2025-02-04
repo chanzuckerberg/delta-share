@@ -5,18 +5,22 @@ on:
     push:
 
 jobs:
-  argus_builder:
-    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
-    secrets: inherit
-    with:
-      envs: prod
-      branches_include: 'main'
-      path_filters: '!.infra/**'
-      images: |
-        {
-          "backend": {
-            "context": "./backend/",
-            "dockerfile": "./backend/Dockerfile",
-            "platform": "linux/amd64"
-          }
-        }
+  docker-build-prod:
+    steps:
+      - argus_builder:
+        uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
+        secrets: inherit
+        with:
+          envs: prod
+          branches_include: 'main'
+          path_filters: '!.infra/**'
+          images: |
+            {
+              "backend": {
+                "context": "./backend/",
+                "dockerfile": "./backend/Dockerfile",
+                "platform": "linux/amd64"
+              }
+            }
+      - name: Debug
+        run: echo "all outputs from prep: ${{ steps.argus_builder.outputs }}"
