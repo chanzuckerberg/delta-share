@@ -1,26 +1,28 @@
+name: Docker Image Build - Prod
+
 on:
     workflow_dispatch: {}
     push:
 
 jobs:
-  docker-build-prod:
-    name: Docker Image Build - Prod
-    runs-on: [ARM64, self-hosted, Linux]
+  argus_builder:
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
+    secrets: inherit
+    with:
+      envs: prod
+      branches_include: 'main'
+      path_filters: '!.infra/**'
+      images: |
+        {
+          "backend": {
+            "context": "./backend/",
+            "dockerfile": "./backend/Dockerfile",
+            "platform": "linux/amd64"
+          }
+        }
+  debug_argus_builder:
+    needs: argus_builder
     steps:
-      - name: Argus docker build
-        uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
-        secrets: inherit
-        with:
-          envs: prod
-          branches_include: 'main'
-          path_filters: '!.infra/**'
-          images: |
-            {
-              "backend": {
-                "context": "./backend/",
-                "dockerfile": "./backend/Dockerfile",
-                "platform": "linux/amd64"
-              }
-            }
       - name: Debug
-        run: echo "all outputs from prep ${{ steps.argus_builder.outputs }}"
+        run: |
+          echo "Argus Builder: ${{ needs.argus_builder.outputs }}"
