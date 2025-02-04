@@ -1,11 +1,11 @@
-name: Docker Image Build - Prod
-
 on:
     workflow_dispatch: {}
     push:
 
 jobs:
   docker-build-prod:
+    name: Docker Image Build - Prod
+    runs-on: [ARM64, self-hosted, Linux]
     steps:
       - argus_builder:
         uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
