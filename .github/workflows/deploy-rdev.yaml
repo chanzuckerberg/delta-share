@@ -1,4 +1,4 @@
-name: Create an rdev Stack
+name: Create a rdev Stack
 
 on:
   pull_request:

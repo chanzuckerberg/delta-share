@@ -1,4 +1,4 @@
-name: Create an Prod Stack
+name: Create a Prod Stack
 
 on:
   push:
