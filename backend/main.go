@@ -50,8 +50,10 @@ type TokenRotationRequest struct {
 }
 
 type TokenRotationResponse struct {
-	Token          string `json:"token"`
-	ActivationLink string `json:"activation_link"`
+	Tokens []struct {
+		ActivationURL  string `json:"activation_url"`
+		ExpirationTime int64  `json:"expiration_time"`
+	} `json:"tokens"`
 }
 
 func validateCognitoToken(token string) (string, error) {
@@ -138,31 +140,31 @@ func createRecipient(email string) (string, error) {
 }
 
 // rotateToken rotates the recipient’s token and returns the new token.
-func rotateToken(email string, expireInSeconds int) (string, string, error) {
+func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
 
 	// Prepare the request body
 	payload := TokenRotationRequest{
-		ExistingTokenExpireInSeconds: expireInSeconds, // This will define when the old token expires
+		ExistingTokenExpireInSeconds: expireInSeconds,
 	}
 
 	resp, err := makeRequest("POST", url, payload)
-	fmt.Printf("Made the response")
+
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.NewDecoder(resp.Body).Decode(&rotationResponse); err != nil {
-			return "", "", fmt.Errorf("error parsing token rotation response: %w", err)
+			return "", fmt.Errorf("error parsing token rotation response: %w", err)
 		}
-		fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.ActivationLink)
-		return rotationResponse.Token, rotationResponse.ActivationLink, nil
+		fmt.Printf("Token rotated successfully. New activation link: %s\n", rotationResponse.Tokens[0].ActivationURL)
+		return rotationResponse.Tokens[0].ActivationURL, nil
 	}
 
-	return "", "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
+	return "", fmt.Errorf("failed to rotate token: %d", resp.StatusCode)
 }
 
 // makeRequest is a helper function to send HTTP requests
@@ -247,15 +249,14 @@ func main() {
 
 		if expirationTime < currentTime {
 			fmt.Printf("Token for recipient '%s' has expired. Rotating...\n", recipient.Name)
-			newToken, activationLink, err := rotateToken(email, expirationInSeconds)
+			activationLink, err := rotateToken(email, expirationInSeconds)
 			if err != nil {
 				return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 					"error": "Error rotating token: " + err.Error(),
 				})
 			}
 			return c.Status(http.StatusOK).JSON(fiber.Map{
-				"message":         fmt.Sprintf("Token for %s rotated. Activation link is: %s", email, activationLink),
-				"token":           newToken,
+				"message":         fmt.Sprintf("Token for %s rotated.", email),
 				"activation_link": activationLink,
 			})
 		}
