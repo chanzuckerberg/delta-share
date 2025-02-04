@@ -230,6 +230,7 @@ func main() {
 		}
 
 		// Check token expiration
+		fmt.Printf("Recipient response: %+v\n", recipient)
 		expirationTime := recipient.Recipients[0].Tokens[0].ExpirationTime
 		currentTime := time.Now().Unix()
 
