@@ -6,12 +6,13 @@ on:
 
 jobs:
   argus_builder:
-    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.1.0
     secrets: inherit
     with:
       envs: prod
-      branches_include: 'main'
+      branches_include: release-please--branches--main
       path_filters: '!.infra/**'
+      force_update_manifests: true
       images: |
         {
           "backend": {
@@ -20,10 +21,3 @@ jobs:
             "platform": "linux/amd64"
           }
         }
-  debug_argus_builder:
-    runs_on: [ARM64, self-hosted, Linux]
-    needs: argus_builder
-    steps:
-      - name: Debug
-        run: |
-          echo "Argus Builder: ${{ needs.argus_builder.outputs }}"
