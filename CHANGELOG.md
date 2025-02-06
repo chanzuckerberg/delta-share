@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](https://github.com/chanzuckerberg/delta-share/compare/v0.0.7...v0.0.8) (2025-02-06)
+
+
+### Bug Fixes
+
+* Remove dir ([#19](https://github.com/chanzuckerberg/delta-share/issues/19)) ([023b8a7](https://github.com/chanzuckerberg/delta-share/commit/023b8a7b2a793926836cee09c330520fbd459d7a))
+
 ## [0.0.7](https://github.com/chanzuckerberg/delta-share/compare/v0.0.6...v0.0.7) (2025-02-06)
 
 
