@@ -44,6 +44,7 @@ jobs:
         with:
           version: latest
           args: release --clean
+          workdir: cli
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         if: ${{ steps.release.outputs.release_created }}
