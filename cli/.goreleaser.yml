@@ -27,3 +27,4 @@ brews:
       name: homebrew-tap
     homepage: "https://github.com/chanzuckerberg/delta-share"
     test: system "#{bin}/delta-share version"
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
