@@ -38,6 +38,7 @@ jobs:
           cache: true
         if: ${{ steps.release.outputs.release_created }}
 
+      # trigger .goreleaser.yml
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
