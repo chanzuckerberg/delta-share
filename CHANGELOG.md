@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/chanzuckerberg/delta-share/compare/v0.0.4...v0.0.5) (2025-02-06)
+
+
+### Bug Fixes
+
+* Move go mod directory ([#13](https://github.com/chanzuckerberg/delta-share/issues/13)) ([db907db](https://github.com/chanzuckerberg/delta-share/commit/db907db028aa1a871a5ba6f4203ee073664706ed))
+
 ## [0.0.4](https://github.com/chanzuckerberg/delta-share/compare/v0.0.3...v0.0.4) (2025-02-06)
 
 
