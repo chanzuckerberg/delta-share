@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/chanzuckerberg/delta-share/compare/v0.0.5...v0.0.6) (2025-02-06)
+
+
+### Bug Fixes
+
+* Change build dir ([#15](https://github.com/chanzuckerberg/delta-share/issues/15)) ([06deab5](https://github.com/chanzuckerberg/delta-share/commit/06deab5bd1d491f32aa4d7ddcb6202643d2022a9))
+
 ## [0.0.5](https://github.com/chanzuckerberg/delta-share/compare/v0.0.4...v0.0.5) (2025-02-06)
 
 
