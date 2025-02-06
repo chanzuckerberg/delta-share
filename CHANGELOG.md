@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/chanzuckerberg/delta-share/compare/v0.0.2...v0.0.3) (2025-02-06)
+
+
+### Misc
+
+* Add comment to trigger release ([#9](https://github.com/chanzuckerberg/delta-share/issues/9)) ([287b8d0](https://github.com/chanzuckerberg/delta-share/commit/287b8d0bec45d7a7dfc84cb5fd67598dcbd8033c))
+
 ## [0.0.2](https://github.com/chanzuckerberg/delta-share/compare/v0.0.1...v0.0.2) (2025-02-05)
 
 
