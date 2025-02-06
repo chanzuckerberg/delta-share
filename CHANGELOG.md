@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/chanzuckerberg/delta-share/compare/v0.0.8...v0.0.9) (2025-02-06)
+
+
+### Misc
+
+* fixed 404 not found error when attempted to brew tap ([#21](https://github.com/chanzuckerberg/delta-share/issues/21)) ([3377e6e](https://github.com/chanzuckerberg/delta-share/commit/3377e6ee6d64fa88f4ab4ea4ae81191a738281d7))
+
 ## [0.0.8](https://github.com/chanzuckerberg/delta-share/compare/v0.0.7...v0.0.8) (2025-02-06)
 
 
