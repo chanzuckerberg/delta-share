@@ -2,7 +2,7 @@ project_name: delta-share
 
 builds:
   - binary: delta-share
-    dir: delta-share/core/cli
+    dir: delta-share/cli
     env:
       - CGO_ENABLED=0
     goos:
