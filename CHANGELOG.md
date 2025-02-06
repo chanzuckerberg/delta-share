@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/chanzuckerberg/delta-share/compare/v0.0.3...v0.0.4) (2025-02-06)
+
+
+### Bug Fixes
+
+* Move releaser ([#11](https://github.com/chanzuckerberg/delta-share/issues/11)) ([325d80e](https://github.com/chanzuckerberg/delta-share/commit/325d80e925e48c147224260b7ee78c77ca7c50b6))
+
 ## [0.0.3](https://github.com/chanzuckerberg/delta-share/compare/v0.0.2...v0.0.3) (2025-02-06)
 
 
