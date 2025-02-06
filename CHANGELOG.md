@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/chanzuckerberg/delta-share/compare/v0.0.6...v0.0.7) (2025-02-06)
+
+
+### Bug Fixes
+
+* Move cli ([#17](https://github.com/chanzuckerberg/delta-share/issues/17)) ([19f6ad5](https://github.com/chanzuckerberg/delta-share/commit/19f6ad5355caa9fc8e41f2d9f8b8bd2bdf41999d))
+
 ## [0.0.6](https://github.com/chanzuckerberg/delta-share/compare/v0.0.5...v0.0.6) (2025-02-06)
 
 
