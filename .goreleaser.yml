@@ -12,7 +12,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - "-w -s -X github.com/chanzuckerberg/delta-share/core/shared/go/version.ReleaseGitSha={{.Commit}} -X github.com/chanzuckerberg/delta-share/core/shared/go/version.ReleaseVersion={{.Version}}"
+      - "-w -s -X github.com/chanzuckerberg/delta-share/version.ReleaseGitSha={{.Commit}} -X github.com/chanzuckerberg/delta-share/version.ReleaseVersion={{.Version}}"
     flags:
       - -trimpath
 
@@ -26,5 +26,5 @@ brews:
     repository:
       owner: chanzuckerberg
       name: homebrew-tap
-    homepage: "https://github.com/chanzuckerberg/delta-share-artifacts"
+    homepage: "https://github.com/chanzuckerberg/delta-share"
     test: system "#{bin}/delta-share version"

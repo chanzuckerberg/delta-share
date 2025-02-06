@@ -24,3 +24,25 @@ jobs:
         id: release
         with:
           token: ${{ steps.generate_token.outputs.token }}
+      
+      - uses: actions/checkout@v3
+        # we need to fetch all history and tags
+        # so we build the proper version
+        with:
+          fetch-depth: 0
+        if: ${{ steps.release.outputs.release_created }}
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache: true
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        if: ${{ steps.release.outputs.release_created }}
