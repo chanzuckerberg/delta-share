@@ -111,16 +111,12 @@ func queryRecipient(email string) (*RecipientResponse, bool, error) {
 		return nil, false, fmt.Errorf("error reading Databricks response body: %w", err)
 	}
 
-	// 🔹 Log full response for debugging
-	fmt.Printf("Databricks Response (Status %d): %s\n", resp.StatusCode, string(body))
-
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
 		if err := json.Unmarshal(body, &recipient); err != nil {
 			return nil, false, fmt.Errorf("error parsing recipient response JSON: %w", err)
 		}
 
-		// ✅ Check if `tokens` exists and has at least one entry
 		hasTokens := len(recipient.Tokens) > 0
 
 		return &recipient, hasTokens, nil
@@ -131,7 +127,6 @@ func queryRecipient(email string) (*RecipientResponse, bool, error) {
 	return nil, false, fmt.Errorf("unexpected Databricks response: %d - %s", resp.StatusCode, string(body))
 }
 
-// Create a new recipient in Databricks
 func createRecipient(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := databricksAPIBase
@@ -148,16 +143,11 @@ func createRecipient(email string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read response body for debugging
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading create-recipient response body: %w", err)
 	}
 
-	// 🔹 Log full response for debugging
-	fmt.Printf("Databricks Create Recipient Response (Status %d): %s\n", resp.StatusCode, string(body))
-
-	// ✅ Handle successful recipient creation, returns a status 200 if successful
 	if resp.StatusCode == http.StatusOK {
 		var recipientResponse RecipientResponse
 		if err := json.Unmarshal(body, &recipientResponse); err != nil {
@@ -168,11 +158,9 @@ func createRecipient(email string) (string, error) {
 		return recipientResponse.Tokens[0].ActivationURL, nil
 	}
 
-	// Handle unexpected responses
 	return "", fmt.Errorf("failed to create recipient: %d - %s", resp.StatusCode, string(body))
 }
 
-// Rotate an expired token
 func rotateToken(email string, expireInSeconds int) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := fmt.Sprintf("%s/%s/rotate-token", databricksAPIBase, recipientName)
@@ -192,9 +180,6 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 		return "", fmt.Errorf("error reading Databricks rotate-token response body: %w", err)
 	}
 
-	// 🔹 Log full response for debugging
-	fmt.Printf("Databricks Rotate Token Response (Status %d): %s\n", resp.StatusCode, string(body))
-
 	if resp.StatusCode == http.StatusOK {
 		var rotationResponse TokenRotationResponse
 		if err := json.Unmarshal(body, &rotationResponse); err != nil {
@@ -207,11 +192,9 @@ func rotateToken(email string, expireInSeconds int) (string, error) {
 		return token.ActivationURL, nil
 	}
 
-	// Handle unexpected responses
 	return "", fmt.Errorf("failed to rotate token: %d - %s", resp.StatusCode, string(body))
 }
 
-// Send HTTP requests
 func makeRequest(method, url string, payload interface{}) (*http.Response, error) {
 	client := &http.Client{}
 
@@ -238,12 +221,10 @@ func makeRequest(method, url string, payload interface{}) (*http.Response, error
 func main() {
 	app := fiber.New()
 
-	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(http.StatusOK).JSON(fiber.Map{"status": "healthy"})
 	})
 
-	// Token Verification & Databricks Recipient Handling
 	app.Post("/verify-token", func(c *fiber.Ctx) error {
 		var tokenRequest TokenRequest
 
@@ -256,7 +237,7 @@ func main() {
 			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token: " + err.Error()})
 		}
 
-		// 🔹 Step 1: Check if recipient exists
+		// Check if recipient exists
 		recipient, hasTokens, err := queryRecipient(email)
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
@@ -264,7 +245,7 @@ func main() {
 			})
 		}
 
-		// 🔹 Step 2: If recipient is missing, create it
+		// If recipient is missing, create it
 		if recipient == nil {
 			fmt.Printf("⚠️ Recipient for email '%s' does not exist. Creating...\n", email)
 			activationLink, err := createRecipient(email)
@@ -279,7 +260,7 @@ func main() {
 			})
 		}
 
-		// 🔹 Step 3: If recipient exists but has no token, rotate a new token
+		// If recipient exists but has no token, rotate a new token
 		if !hasTokens {
 			fmt.Printf("⚠️ Recipient '%s' exists but has no tokens. Rotating...\n", recipient.Name)
 			activationLink, err := rotateToken(email, expirationInSeconds)
@@ -294,10 +275,10 @@ func main() {
 			})
 		}
 
-		// 🔹 Step 4: If recipient exists and has a valid token, return it
+		// If recipient exists and has a valid token, return it
 		return c.Status(http.StatusOK).JSON(fiber.Map{
 			"message":         fmt.Sprintf("Token for %s is still valid", email),
-			"activation_link": recipient.Tokens[0].ActivationURL, // ✅ Safe to access
+			"activation_link": recipient.Tokens[0].ActivationURL,
 		})
 	})
 
