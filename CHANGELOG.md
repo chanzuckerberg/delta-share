@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.11](https://github.com/chanzuckerberg/delta-share/compare/v0.0.10...v0.0.11) (2025-02-11)
+
+
+### Bug Fixes
+
+* Update runs-on labels in GitHub Actions workflows ([#27](https://github.com/chanzuckerberg/delta-share/issues/27)) ([144539a](https://github.com/chanzuckerberg/delta-share/commit/144539a6aebc2be1c10a3a389fdf15c13cf87c09))
+
+
+### Misc
+
+* Cleanup code ([#28](https://github.com/chanzuckerberg/delta-share/issues/28)) ([2b14d71](https://github.com/chanzuckerberg/delta-share/commit/2b14d71bc76741fe0ae01ce3a2ca67bb34059cc1))
+* revert change for private download ([#25](https://github.com/chanzuckerberg/delta-share/issues/25)) ([3234b5a](https://github.com/chanzuckerberg/delta-share/commit/3234b5ae846da3a33117a490fce4e7297861e2ce))
+
 ## [0.0.10](https://github.com/chanzuckerberg/delta-share/compare/v0.0.9...v0.0.10) (2025-02-06)
 
 
