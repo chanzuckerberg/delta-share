@@ -2,7 +2,7 @@ module github.com/chanzuckerberg/oidc-token
 
 go 1.22.1
 
-require github.com/chanzuckerberg/go-misc/oidc_cli v0.0.0-20241218181938-e245ce8d3ba5
+require github.com/chanzuckerberg/go-misc/oidc_cli/v2 v2.0.0-20250207193449-7744123f98e7
 
 require (
 	al.essio.dev/pkg/shellescape v1.5.1 // indirect
@@ -25,5 +25,4 @@ require (
 	golang.org/x/oauth2 v0.26.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
