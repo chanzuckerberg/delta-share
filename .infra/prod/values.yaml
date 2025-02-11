@@ -2,7 +2,7 @@ stack:
   services:
     backend:
       image:
-        tag: sha-ff103c2
+        tag: sha-9ea1587
       replicaCount: 1
       ingress:
         rules:
