@@ -2,17 +2,16 @@ module github.com/chanzuckerberg/oidc-token
 
 go 1.22.1
 
-require github.com/chanzuckerberg/go-misc/oidc_cli v0.0.0-20241218181938-e245ce8d3ba5
+require github.com/chanzuckerberg/go-misc/oidc_cli/v2 v2.0.0-20250207193449-7744123f98e7
 
 require (
-	github.com/alessio/shellescape v1.4.1 // indirect
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
-	github.com/chanzuckerberg/go-misc/osutil v0.0.0-20240404182313-43e397411f6e // indirect
-	github.com/chanzuckerberg/go-misc/pidlock v0.0.0-20240320212149-709d6d5c338b // indirect
-	github.com/coreos/go-oidc v2.2.1+incompatible // indirect
-	github.com/danieljoos/wincred v1.2.1 // indirect
+	github.com/chanzuckerberg/go-misc/osutil v0.0.0-20250207193449-7744123f98e7 // indirect
+	github.com/chanzuckerberg/go-misc/pidlock v0.0.0-20250207193449-7744123f98e7 // indirect
+	github.com/coreos/go-oidc v2.3.0+incompatible // indirect
+	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
@@ -21,11 +20,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/zalando/go-keyring v0.2.4 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/oauth2 v0.18.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
+	github.com/zalando/go-keyring v0.2.6 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/oauth2 v0.26.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 )
