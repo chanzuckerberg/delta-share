@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.10](https://github.com/chanzuckerberg/delta-share/compare/v0.0.9...v0.0.10) (2025-02-06)
+
+
+### Bug Fixes
+
+* added new custom downlown stategy ([#23](https://github.com/chanzuckerberg/delta-share/issues/23)) ([3a0c455](https://github.com/chanzuckerberg/delta-share/commit/3a0c45597fdb3c42c5f7d8ba6e4f7a3bdee277c6))
+
+## [0.0.9](https://github.com/chanzuckerberg/delta-share/compare/v0.0.8...v0.0.9) (2025-02-06)
+
+
+### Misc
+
+* fixed 404 not found error when attempted to brew tap ([#21](https://github.com/chanzuckerberg/delta-share/issues/21)) ([3377e6e](https://github.com/chanzuckerberg/delta-share/commit/3377e6ee6d64fa88f4ab4ea4ae81191a738281d7))
+
 ## [0.0.8](https://github.com/chanzuckerberg/delta-share/compare/v0.0.7...v0.0.8) (2025-02-06)
 
 
