@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/chanzuckerberg/delta-share/compare/v0.0.11...v0.0.12) (2025-02-11)
+
+
+### Bug Fixes
+
+* go-misc package upgrade ([#29](https://github.com/chanzuckerberg/delta-share/issues/29)) ([c62e726](https://github.com/chanzuckerberg/delta-share/commit/c62e7260fd9986c491ef77223cad80b5f6ce5679))
+
 ## [0.0.11](https://github.com/chanzuckerberg/delta-share/compare/v0.0.10...v0.0.11) (2025-02-11)
 
 
