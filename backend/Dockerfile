@@ -15,7 +15,7 @@ COPY . .
 RUN GOPROXY=direct go build -o api .
 
 # Final Stage
-FROM docker.io/library/alpine:3
+FROM 533267185808.dkr.ecr.us-west-2.amazonaws.com/docker.io/central/library/alpine:3
 WORKDIR /app
 
 # Install runtime dependencies
