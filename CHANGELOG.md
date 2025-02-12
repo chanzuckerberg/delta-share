@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13](https://github.com/chanzuckerberg/delta-share/compare/v0.0.12...v0.0.13) (2025-02-12)
+
+
+### Bug Fixes
+
+* expiration time struct ([#31](https://github.com/chanzuckerberg/delta-share/issues/31)) ([03145f2](https://github.com/chanzuckerberg/delta-share/commit/03145f2644cf54e30c3c36ef643850e754c88f2d))
+
 ## [0.0.12](https://github.com/chanzuckerberg/delta-share/compare/v0.0.11...v0.0.12) (2025-02-11)
 
 
