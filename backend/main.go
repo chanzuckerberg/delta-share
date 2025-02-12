@@ -29,7 +29,7 @@ type TokenRequest struct {
 type RecipientRequest struct {
 	Name                string `json:"name"`
 	AuthenticationType  string `json:"authentication_type"`
-	TokenExpirationTime int    `json:"token_expiration_time"`
+	TokenExpirationTime int    `json:"expiration_time"`
 }
 
 type RecipientResponse struct {
@@ -276,6 +276,7 @@ func main() {
 		}
 
 		// If recipient exists and has a valid token, return it
+		fmt.Printf("🔍 Debug: Recipient struct: %+v\n", recipient)
 		return c.Status(http.StatusOK).JSON(fiber.Map{
 			"message":         fmt.Sprintf("Token for %s is still valid", email),
 			"activation_link": recipient.Tokens[0].ActivationURL,

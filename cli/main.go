@@ -25,7 +25,8 @@ func main() {
 	}
 
 	// Send the token to the backend
-	backendURL := "https://delta-share.prod-sci-general.prod.czi.team/verify-token"
+	// backendURL := "https://delta-share.prod-sci-general.prod.czi.team/verify-token"
+	backendURL := "http://localhost:3000/verify-token"
 	reqBody := map[string]string{"token": token.IDToken}
 	reqBodyJSON, _ := json.Marshal(reqBody)
 
