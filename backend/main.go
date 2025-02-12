@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,7 +21,8 @@ var (
 	databricksAPIBase = fmt.Sprintf("%s/api/2.1/unity-catalog/recipients", databricksURL)
 )
 
-const expirationInSeconds = 604800 // 7 days
+const expirationInSeconds = 604800                              // 7 days
+const expirationInMilliseconds = int64(7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
 
 type TokenRequest struct {
 	Token string `json:"token"`
@@ -29,7 +31,7 @@ type TokenRequest struct {
 type RecipientRequest struct {
 	Name                string `json:"name"`
 	AuthenticationType  string `json:"authentication_type"`
-	TokenExpirationTime int    `json:"token_expiration_time"`
+	TokenExpirationTime int64  `json:"expiration_time"`
 }
 
 type RecipientResponse struct {
@@ -131,10 +133,13 @@ func createRecipient(email string) (string, error) {
 	recipientName := strings.Split(email, "@")[0]
 	url := databricksAPIBase
 
+	nowMs := time.Now().UnixMilli()
+	expirationTimeFromNow := nowMs + expirationInMilliseconds
+
 	payload := RecipientRequest{
 		Name:                recipientName,
 		AuthenticationType:  "TOKEN",
-		TokenExpirationTime: expirationInSeconds,
+		TokenExpirationTime: expirationTimeFromNow,
 	}
 
 	resp, err := makeRequest("POST", url, payload)
