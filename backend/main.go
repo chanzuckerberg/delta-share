@@ -111,6 +111,8 @@ func queryRecipient(email string) (*RecipientResponse, bool, error) {
 		return nil, false, fmt.Errorf("error reading Databricks response body: %w", err)
 	}
 
+	fmt.Printf("🔍 Raw Databricks API Response: %s\n", string(body))
+
 	if resp.StatusCode == http.StatusOK {
 		var recipient RecipientResponse
 		if err := json.Unmarshal(body, &recipient); err != nil {
