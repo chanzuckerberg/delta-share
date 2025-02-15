@@ -5,7 +5,7 @@ on:
 
 jobs:
   argus_builder:
-    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.0.0
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.2.0
     secrets: inherit
     if: github.actor != 'dependabot[bot]'
     with:
