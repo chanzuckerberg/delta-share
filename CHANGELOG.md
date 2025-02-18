@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.14](https://github.com/chanzuckerberg/delta-share/compare/v0.0.13...v0.0.14) (2025-02-18)
+
+
+### Misc
+
+* upgrade builder version ([#34](https://github.com/chanzuckerberg/delta-share/issues/34)) ([57ad1e8](https://github.com/chanzuckerberg/delta-share/commit/57ad1e89a333c2009f93893bb066127d3570b351))
+
 ## [0.0.13](https://github.com/chanzuckerberg/delta-share/compare/v0.0.12...v0.0.13) (2025-02-12)
 
 
