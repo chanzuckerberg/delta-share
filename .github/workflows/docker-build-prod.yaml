@@ -6,7 +6,7 @@ on:
 
 jobs:
   argus_builder:
-    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.1.0
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-docker-build.yaml@v4.3.0
     secrets: inherit
     with:
       envs: prod
