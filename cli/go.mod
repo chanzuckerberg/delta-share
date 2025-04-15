@@ -1,6 +1,7 @@
 module github.com/chanzuckerberg/oidc-token
 
 go 1.22.1
+toolchain go1.24.1
 
 require github.com/chanzuckerberg/go-misc/oidc_cli/v2 v2.0.0-20250207193449-7744123f98e7
 
@@ -21,7 +22,7 @@ require (
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/zalando/go-keyring v0.2.6 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/oauth2 v0.26.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
