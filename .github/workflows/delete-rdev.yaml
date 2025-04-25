@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Delete Stack
-        uses: chanzuckerberg/argus-artifacts/ci/packages/delete-stack@v0.41.0
+        uses: chanzuckerberg/argus-artifacts/ci/packages/delete-stack@v0.68.1
         with:
           appName: delta-share
           envName: rdev
