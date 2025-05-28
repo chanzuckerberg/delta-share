@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Create Stack in Argus Prod
         id: upsert
-        uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0.41.0
+        uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0.73.0
         with:
           appName: delta-share
           envName: prod
