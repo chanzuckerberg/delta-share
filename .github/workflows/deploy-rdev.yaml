@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Create Stack
         id: create
-        uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0.41.0
+        uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0.75.0
         with:
           appName: delta-share
           envName: rdev
