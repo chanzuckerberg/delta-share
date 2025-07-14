@@ -25,7 +25,7 @@ jobs:
         with:
           token: ${{ steps.generate_token.outputs.token }}
       
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         # we need to fetch all history and tags
         # so we build the proper version
         with:
