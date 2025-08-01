@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.14](https://github.com/chanzuckerberg/delta-share/compare/v0.0.13...v0.0.14) (2025-08-01)
+
+
+### Misc
+
+* bump argus docker builder ([#36](https://github.com/chanzuckerberg/delta-share/issues/36)) ([078840b](https://github.com/chanzuckerberg/delta-share/commit/078840b308457b440fe8baedbaa159beba974535))
+* CCIE-4313 replace tibdex/github-app-token ([#44](https://github.com/chanzuckerberg/delta-share/issues/44)) ([a195196](https://github.com/chanzuckerberg/delta-share/commit/a19519611d9823e408d43f88d71d55f2136c6d54))
+* CCIE-4332 use GH_ACTIONS_HELPER_* ([#63](https://github.com/chanzuckerberg/delta-share/issues/63)) ([cb7960d](https://github.com/chanzuckerberg/delta-share/commit/cb7960d0ecbacec475a5beebbea4ead80ed504d5))
+* CCIE-4984 conform to open sourcing guidelines ([#67](https://github.com/chanzuckerberg/delta-share/issues/67)) ([6a10b13](https://github.com/chanzuckerberg/delta-share/commit/6a10b13fbfd5fef04a28976ccd878a6efba93a89))
+* upgrade builder to v6 ([#38](https://github.com/chanzuckerberg/delta-share/issues/38)) ([1e55a6a](https://github.com/chanzuckerberg/delta-share/commit/1e55a6ac5ab70776d2e95ff41a868aa84a0c5862))
+* upgrade builder version ([#34](https://github.com/chanzuckerberg/delta-share/issues/34)) ([57ad1e8](https://github.com/chanzuckerberg/delta-share/commit/57ad1e89a333c2009f93893bb066127d3570b351))
+
 ## [0.0.13](https://github.com/chanzuckerberg/delta-share/compare/v0.0.12...v0.0.13) (2025-02-12)
 
 
